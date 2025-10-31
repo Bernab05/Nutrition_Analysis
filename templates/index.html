@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analyseur Nutritionnel - Suivi des Apports Journaliers</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <h1 class="logo">🍎 NutriTracker</h1>
+                <p class="tagline">Analyseur Nutritionnel Intelligent</p>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <div class="container">
+        <!-- User Profile Card -->
+        <section class="card profile-card">
+            <h2 class="card-title">👤 Votre Profil</h2>
+            <div class="profile-form">
+                <div class="form-group">
+                    <label for="age">Âge</label>
+                    <input type="number" id="age" min="18" max="120" value="30" placeholder="Votre âge">
+                </div>
+                <div class="form-group">
+                    <label for="sex">Sexe</label>
+                    <select id="sex">
+                        <option value="homme">Homme</option>
+                        <option value="femme">Femme</option>
+                    </select>
+                </div>
+                <button class="btn btn-primary" onclick="updateProfile()">
+                    Mettre à jour
+                </button>
+            </div>
+            <div id="profile-info" class="profile-info"></div>
+        </section>
+
+        <!-- Search Section -->
+        <section class="card search-card">
+            <h2 class="card-title">🔍 Rechercher un Produit</h2>
+
+            <div class="tabs">
+                <button class="tab-btn active" onclick="switchTab('barcode')">
+                    📱 Code-barre
+                </button>
+                <button class="tab-btn" onclick="switchTab('name')">
+                    🔎 Nom du produit
+                </button>
+            </div>
+
+            <!-- Barcode Search -->
+            <div id="barcode-search" class="tab-content active">
+                <div class="search-box">
+                    <input type="text" id="barcode-input" placeholder="Ex: 3017624010701" class="search-input">
+                    <button class="btn btn-primary" onclick="searchBarcode()">
+                        Rechercher
+                    </button>
+                </div>
+            </div>
+
+            <!-- Name Search -->
+            <div id="name-search" class="tab-content">
+                <div class="search-box">
+                    <input type="text" id="name-input" placeholder="Ex: Nutella, Coca Cola..." class="search-input">
+                    <button class="btn btn-primary" onclick="searchByName()">
+                        Rechercher
+                    </button>
+                </div>
+                <div id="search-results" class="search-results"></div>
+            </div>
+        </section>
+
+        <!-- Product Details -->
+        <div id="product-details" class="card product-card" style="display: none;">
+            <h2 class="card-title">📦 Détails du Produit</h2>
+            <div id="product-info"></div>
+
+            <div class="add-consumption">
+                <h3>Ajouter au journal</h3>
+                <div class="quantity-input">
+                    <label for="quantity">Quantité (grammes):</label>
+                    <input type="number" id="quantity" value="100" min="1" max="10000">
+                    <button class="btn btn-success" onclick="addToJournal()">
+                        ✅ Ajouter
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Daily Summary with Progress Indicators -->
+        <section class="card summary-card">
+            <div class="summary-header">
+                <h2 class="card-title">📊 Bilan du Jour</h2>
+                <p class="summary-date" id="current-date"></p>
+            </div>
+
+            <div id="loading" class="loading">
+                <div class="spinner"></div>
+                <p>Chargement...</p>
+            </div>
+
+            <div id="summary-content" style="display: none;">
+                <!-- Calories -->
+                <div class="nutrient-indicator">
+                    <div class="nutrient-header">
+                        <div class="nutrient-info">
+                            <span class="nutrient-icon">⚡</span>
+                            <span class="nutrient-name">Calories</span>
+                        </div>
+                        <div class="nutrient-values">
+                            <span class="current-value" id="calories-current">0</span>
+                            <span class="separator">/</span>
+                            <span class="target-value" id="calories-target">0</span>
+                            <span class="unit">kcal</span>
+                        </div>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="calories-progress" style="width: 0%"></div>
+                    </div>
+                    <div class="percentage" id="calories-percentage">0%</div>
+                </div>
+
+                <!-- Protéines -->
+                <div class="nutrient-indicator">
+                    <div class="nutrient-header">
+                        <div class="nutrient-info">
+                            <span class="nutrient-icon">💪</span>
+                            <span class="nutrient-name">Protéines</span>
+                        </div>
+                        <div class="nutrient-values">
+                            <span class="current-value" id="proteins-current">0</span>
+                            <span class="separator">/</span>
+                            <span class="target-value" id="proteins-target">0</span>
+                            <span class="unit">g</span>
+                        </div>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="proteins-progress" style="width: 0%"></div>
+                    </div>
+                    <div class="percentage" id="proteins-percentage">0%</div>
+                </div>
+
+                <!-- Glucides -->
+                <div class="nutrient-indicator">
+                    <div class="nutrient-header">
+                        <div class="nutrient-info">
+                            <span class="nutrient-icon">🍚</span>
+                            <span class="nutrient-name">Glucides</span>
+                        </div>
+                        <div class="nutrient-values">
+                            <span class="current-value" id="carbs-current">0</span>
+                            <span class="separator">/</span>
+                            <span class="target-value" id="carbs-target">0</span>
+                            <span class="unit">g</span>
+                        </div>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="carbs-progress" style="width: 0%"></div>
+                    </div>
+                    <div class="percentage" id="carbs-percentage">0%</div>
+                </div>
+
+                <!-- Lipides -->
+                <div class="nutrient-indicator">
+                    <div class="nutrient-header">
+                        <div class="nutrient-info">
+                            <span class="nutrient-icon">🥑</span>
+                            <span class="nutrient-name">Lipides</span>
+                        </div>
+                        <div class="nutrient-values">
+                            <span class="current-value" id="fat-current">0</span>
+                            <span class="separator">/</span>
+                            <span class="target-value" id="fat-target">0</span>
+                            <span class="unit">g</span>
+                        </div>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="fat-progress" style="width: 0%"></div>
+                    </div>
+                    <div class="percentage" id="fat-percentage">0%</div>
+                </div>
+
+                <!-- Additional Stats -->
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <span class="stat-label">Produits consommés</span>
+                        <span class="stat-value" id="products-count">0</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- History Section -->
+        <section class="card history-card">
+            <h2 class="card-title">📜 Historique des Consommations</h2>
+            <div class="history-controls">
+                <button class="btn btn-secondary" onclick="loadHistory(7)">7 jours</button>
+                <button class="btn btn-secondary" onclick="loadHistory(30)">30 jours</button>
+            </div>
+            <div id="history-content" class="history-content"></div>
+        </section>
+    </div>
+
+    <!-- Toast Notifications -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <p>Alimenté par <strong>OpenFoodFacts</strong> - Base de données collaborative de 2,9M+ produits</p>
+            <p>Développé avec ❤️ pour votre santé</p>
+        </div>
+    </footer>
+
+    <!-- JavaScript -->
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>

@@ -1,0 +1,23 @@
+# Dépendances pour le Web Scraper Avancé
+# Installation: pip install -r requirements_scraper.txt
+
+# Selenium et gestion du navigateur
+selenium>=4.15.0
+webdriver-manager>=4.0.1
+
+# Parsing HTML
+beautifulsoup4>=4.12.0
+lxml>=5.0.0
+
+# Requêtes HTTP
+requests>=2.31.0
+urllib3>=2.1.0
+
+# Export Word
+python-docx>=1.1.0
+
+# Progress bar
+tqdm>=4.66.0
+
+# Optionnel: Pour contourner certaines protections anti-bot
+# undetected-chromedriver>=3.5.4
